@@ -19,63 +19,61 @@ const DEFAULT_CATEGORIES = [
 ];
 
 export async function POST(request: NextRequest) {
-  // CSRF
-  const csrfToken = request.headers.get('X-CSRF-Token');
-  const csrfValid = await validateCsrfToken(csrfToken);
-  if (!csrfValid) {
-    return NextResponse.json({ error: 'Invalid request.' }, { status: 403 });
-  }
-
-  // Only allow setup if not yet configured
-  const configured = await isAppConfigured();
-  if (configured) {
-    return NextResponse.json({ error: 'Already configured.' }, { status: 400 });
-  }
-
-  let password: string;
   try {
-    const body = await request.json();
-    password = body.password;
-  } catch {
-    return NextResponse.json({ error: 'Invalid request.' }, { status: 400 });
-  }
-
-  if (!password || typeof password !== 'string' || password.length < 8) {
-    return NextResponse.json({ error: 'Password must be at least 8 characters.' }, { status: 400 });
-  }
-
-  const passwordHash = await hashPassword(password);
-
-  // Create user + seed default categories in one transaction
-  const user = await prisma.$transaction(async (tx) => {
-    const newUser = await tx.user.create({ data: { passwordHash } });
-
-    for (const cat of DEFAULT_CATEGORIES) {
-      const category = await tx.category.create({
-        data: {
-          userId: newUser.id,
-          name: cat.name,
-          color: cat.color,
-          order: cat.order,
-          isSystem: cat.isSystem,
-        },
-      });
-
-      for (let i = 0; i < cat.subcategories.length; i++) {
-        await tx.subcategory.create({
-          data: {
-            categoryId: category.id,
-            name: cat.subcategories[i],
-            order: i,
-          },
-        });
-      }
+    // CSRF
+    const csrfToken = request.headers.get('X-CSRF-Token');
+    const csrfValid = await validateCsrfToken(csrfToken);
+    if (!csrfValid) {
+      return NextResponse.json({ error: 'Invalid request.' }, { status: 403 });
     }
 
-    return newUser;
-  });
+    // Only allow setup if not yet configured
+    const configured = await isAppConfigured();
+    if (configured) {
+      return NextResponse.json({ error: 'Already configured.' }, { status: 400 });
+    }
 
-  await setSessionCookie(user.id);
+    let password: string;
+    try {
+      const body = await request.json();
+      password = body.password;
+    } catch {
+      return NextResponse.json({ error: 'Invalid request.' }, { status: 400 });
+    }
 
-  return NextResponse.json({ ok: true });
+    if (!password || typeof password !== 'string' || password.length < 8) {
+      return NextResponse.json({ error: 'Password must be at least 8 characters.' }, { status: 400 });
+    }
+
+    const passwordHash = await hashPassword(password);
+
+    // Create user + seed default categories in a single atomic query
+    const user = await prisma.user.create({
+      data: {
+        passwordHash,
+        categories: {
+          create: DEFAULT_CATEGORIES.map((cat) => ({
+            name: cat.name,
+            color: cat.color,
+            order: cat.order,
+            isSystem: cat.isSystem,
+            subcategories: {
+              create: cat.subcategories.map((subName, i) => ({
+                name: subName,
+                order: i,
+              })),
+            },
+          })),
+        },
+      },
+    });
+
+    await setSessionCookie(user.id);
+
+    return NextResponse.json({ ok: true });
+  } catch (err: unknown) {
+    console.error('SETUP HANDLER ERROR:', err);
+    const message = err instanceof Error ? err.message : 'Setup failed';
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

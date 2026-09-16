@@ -15,9 +15,14 @@ export default function SetupPage() {
   useEffect(() => {
     fetch('/api/auth/csrf')
       .then((r) => r.json())
-      .then((d) => setCsrfToken(d.token))
+      .then((d) => {
+        if (d?.token) setCsrfToken(d.token);
+        if (d?.configured) {
+          router.replace('/login');
+        }
+      })
       .catch(() => {});
-  }, []);
+  }, [router]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -34,25 +39,34 @@ export default function SetupPage() {
 
     setLoading(true);
     try {
+      let token = csrfToken;
+      if (!token) {
+        const csrfRes = await fetch('/api/auth/csrf');
+        const csrfData = await csrfRes.json();
+        token = csrfData.token;
+        if (token) setCsrfToken(token);
+      }
+
       const res = await fetch('/api/auth/setup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
+          'X-CSRF-Token': token,
         },
         body: JSON.stringify({ password }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
 
       if (res.ok) {
         router.push('/today');
         router.refresh();
       } else {
-        setError(data.error || 'Setup failed. Please try again.');
+        setError(data?.error || `Setup failed (${res.status}). Please try again.`);
       }
-    } catch {
-      setError('Unable to connect. Please try again.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Unable to connect. Please try again.';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -121,7 +135,7 @@ export default function SetupPage() {
             type="submit"
             className="btn btn-primary btn-md"
             style={{ width: '100%' }}
-            disabled={loading || !password || !confirm || !csrfToken}
+            disabled={loading || !password || !confirm}
           >
             {loading ? (
               <><span className="spinner" aria-hidden="true" /> Setting up…</>

@@ -4,7 +4,7 @@ import { verifySessionToken } from '@/lib/auth';
 
 // Routes that don't require auth
 const PUBLIC_PATHS = ['/login', '/setup'];
-const PUBLIC_API_PATHS = ['/api/auth/login', '/api/auth/setup', '/api/auth/logout'];
+const PUBLIC_API_PATHS = ['/api/auth/login', '/api/auth/setup', '/api/auth/logout', '/api/auth/csrf'];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

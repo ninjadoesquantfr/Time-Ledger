@@ -28,11 +28,19 @@ function LoginForm() {
     setError('');
 
     try {
+      let token = csrfToken;
+      if (!token) {
+        const csrfRes = await fetch('/api/auth/csrf');
+        const csrfData = await csrfRes.json();
+        token = csrfData.token;
+        if (token) setCsrfToken(token);
+      }
+
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
+          'X-CSRF-Token': token,
         },
         body: JSON.stringify({ password }),
       });
@@ -84,7 +92,7 @@ function LoginForm() {
         type="submit"
         className="btn btn-primary btn-md"
         style={{ width: '100%' }}
-        disabled={loading || !password.trim() || !csrfToken}
+        disabled={loading || !password.trim()}
         id="login-submit"
       >
         {loading ? (

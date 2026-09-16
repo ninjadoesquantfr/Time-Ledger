@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { createHmac, randomBytes } from 'crypto';
 
 const CSRF_COOKIE = 'tl_csrf';
-const SECRET = process.env.SESSION_SECRET!;
+const SECRET = process.env.SESSION_SECRET || 'dev-session-secret-fallback-key-time-ledger';
 
 function signToken(token: string): string {
   return createHmac('sha256', SECRET).update(token).digest('base64url');
