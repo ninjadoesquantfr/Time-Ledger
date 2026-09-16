@@ -1,0 +1,33 @@
+.page {
+  min-height: 100dvh;
+  background: var(--color-bg);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+}
+
+.dateTitle {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  margin-bottom: var(--space-1);
+}
+
+.dateSub {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.loggedAmount {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.onThisDay {
+  margin-bottom: var(--space-6);
+}

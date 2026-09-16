@@ -1,0 +1,136 @@
+.row {
+  display: flex;
+  align-items: stretch;
+  min-height: 52px;
+  border-bottom: 1px solid var(--color-border);
+  position: relative;
+  transition: background var(--transition-fast);
+}
+.row:last-child { border-bottom: none; }
+.row:hover { background: var(--color-surface); }
+
+.current {
+  background: #EFF6FF;
+}
+.current:hover { background: #DBEAFE; }
+
+/* Hour label column */
+.hourLabel {
+  width: 68px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-2);
+  border-right: 1px solid var(--color-border);
+}
+
+.hourText {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--color-text-faint);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.current .hourText {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.nowDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  flex-shrink: 0;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Content area */
+.content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  min-width: 0;
+}
+
+.entries {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+}
+
+/* Empty add button */
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--color-text-faint);
+  background: none;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast),
+              background var(--transition-fast);
+  font-family: var(--font-sans);
+}
+.addBtn:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+
+/* Split button */
+.splitBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-faint);
+  background: none;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+  align-self: flex-start;
+}
+.splitBtn:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.emptyReadOnly {
+  font-size: var(--text-sm);
+  color: var(--color-text-faint);
+}
+
+/* Fill indicator bar */
+.fillBar {
+  width: 3px;
+  flex-shrink: 0;
+  background: var(--color-surface-2);
+  display: flex;
+  align-items: flex-end;
+}
+
+.fillBarInner {
+  width: 100%;
+  background: var(--color-accent);
+  border-radius: 2px;
+  transition: height var(--transition-normal);
+  opacity: 0.5;
+}
